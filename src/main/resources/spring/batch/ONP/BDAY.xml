@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:batch="http://www.springframework.org/schema/batch" 
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/batch 
+		http://www.springframework.org/schema/batch/spring-batch-2.2.xsd
+		http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/util 
+		http://www.springframework.org/schema/util/spring-util-3.2.xsd
+		">
+    <import resource="../config/database.xml" />        
+	<import resource="../config/context.xml" />
+
+    
+		<bean id="itemReader"
+		class="org.springframework.batch.item.database.JdbcCursorItemReader"
+		scope="step">
+		<property name="dataSource" ref="source_dataSource" />
+		<property name="sql"
+			value="select DISTINCT cust_mobile_number,1 as msgformatID ,0 as no_of_return_fields from BANKMASTER"/>
+		<property name="rowMapper">
+			<bean class="com.dcs.bnotified.ONP.reader.MessageRowMApper" />
+		</property>
+	</bean>
+
+	<bean id="pagingItemReader"
+		class="org.springframework.batch.item.database.JdbcPagingItemReader"
+		scope="step">
+		<property name="dataSource" ref="source_dataSource" />
+		<property name="pageSize" value="100" />
+		<property name="rowMapper">
+			<bean class="com.dcs.bnotified.ONP.reader.MessageRowMApper" />
+		</property>
+	</bean>
+
+    <bean id="customProcessor" class="com.dcs.bnotified.ONP.process.MessageProcessor">
+  </bean>
+	
+</beans>

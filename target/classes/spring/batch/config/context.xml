@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:batch="http://www.springframework.org/schema/batch" 
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/batch 
+		http://www.springframework.org/schema/batch/spring-batch-2.2.xsd
+		http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/util 
+		http://www.springframework.org/schema/util/spring-util-3.2.xsd
+		">
+
+	<!-- stored job-meta in memory --> 
+	<bean id="jobRepository"
+		class="org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean">
+		<property name="transactionManager" ref="transactionManager" />
+	</bean>
+ 		<bean id="transactionManager"
+		class="org.springframework.batch.support.transaction.ResourcelessTransactionManager">
+	</bean>
+	 
+	<bean id="jobLauncher"
+		class="org.springframework.batch.core.launch.support.SimpleJobLauncher">
+		<property name="jobRepository" ref="jobRepository" />
+	</bean>
+
+<!-- Custom bean registeration -->
+    
+   <bean id="MessageFormatDAO" class="com.dcs.bnotified.ONP.dao.MessageFormatDAO">
+        <property name="dataSource" ref="destination_dataSource" />
+    </bean>
+
+   <bean id="BroadcastMessageDAO" class="com.dcs.bnotified.ONP.dao.BroadcastMessageDAO">
+        <property name="dataSource" ref="destination_dataSource" />
+    </bean>
+
+   <bean id="ONPAuditDAO" class="com.dcs.bnotified.ONP.dao.ONPAuditDAO">
+        <property name="dataSource" ref="destination_dataSource" />
+    </bean>
+    
+   <bean id="CustRegistrationDAO" class="com.dcs.bnotified.ONP.dao.CustRegistrationDAO">
+        <property name="dataSource" ref="destination_dataSource" />
+    </bean>
+
+   <bean id="CustomMsgBroadcastDAO" class="com.dcs.bnotified.ONP.dao.CustomMsgBroadcastDAO">
+        <property name="dataSource" ref="destination_dataSource" />
+    </bean>
+
+<!-- Ends here -->
+
+ 	<job id="testJob" xmlns="http://www.springframework.org/schema/batch">
+		<step id="step1">
+			<tasklet>
+				<chunk reader="itemReader" processor="customProcessor"  writer="itemWriter"
+					commit-interval="1" />
+			</tasklet>
+		</step>
+	</job>
+
+	<bean id="itemWriter" class="org.springframework.batch.item.xml.StaxEventItemWriter">
+		<property name="resource" value="file:xml/outputs/users.xml" />
+		<property name="marshaller" ref="userUnmarshaller" />
+		<property name="rootTagName" value="MessageVO" />
+	</bean>
+	
+	<bean id="userUnmarshaller" class="org.springframework.oxm.xstream.XStreamMarshaller">
+		<property name="aliases">
+			<util:map id="aliases">
+				<entry key="user" value="com.dcs.bnotified.ONP.data.MessageVO" />
+			</util:map>
+		</property>
+	</bean>
+        
+</beans>
